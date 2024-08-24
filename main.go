@@ -16,9 +16,9 @@ import (
 const comicPrefix = "https://xkcd.com/"
 const randomLink = "https://c.xkcd.com/random/comic/"
 
-// TODO: Determine this from the home page
-var ComicsCreated float64 = 2976.0
+var ComicsCreated float64 = getMaxComic()
 
+var comicNumberRegex = regexp.MustCompile(`Permanent link to this comic: <a href="https://xkcd.com/(.*?)">`)
 var comicLinkRegex = regexp.MustCompile(`Permanent link to this comic: <a href="(.*?)">`)
 
 var (
@@ -26,9 +26,11 @@ var (
 	RemoveCommands = true
 )
 
-var s *discordgo.Session
+func init() {
+	flag.Parse()
+}
 
-func init() { flag.Parse() }
+var s *discordgo.Session
 
 func init() {
 	var err error
@@ -128,6 +130,21 @@ func respondWithComic(s *discordgo.Session, i *discordgo.InteractionCreate, link
 			Content: link,
 		},
 	})
+}
+
+func getMaxComic() float64 {
+	content := getHTML("https://xkcd.com/")
+	matches := comicNumberRegex.FindStringSubmatch(content)
+	if len(matches) > 1 {
+		if id, err := strconv.Atoi(matches[1]); err == nil {
+			log.Printf("Latest comic ID: %d", id)
+			return float64(id)
+		}
+	}
+
+	// The latest comic when this bot was created was 2976, so this is a safe and useful default
+	log.Println("Could not get latest comic ID, defaulting to 2976")
+	return 2976.0
 }
 
 func getComic(number int64) string {
