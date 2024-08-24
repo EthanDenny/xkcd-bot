@@ -22,7 +22,7 @@ var comicNumberRegex = regexp.MustCompile(`Permanent link to this comic: <a href
 var comicLinkRegex = regexp.MustCompile(`Permanent link to this comic: <a href="(.*?)">`)
 
 var (
-	BotToken       = flag.String("token", "", "Bot access token")
+	BotToken       = os.Getenv("AUTH_TOKEN")
 	RemoveCommands = true
 )
 
@@ -34,7 +34,7 @@ var s *discordgo.Session
 
 func init() {
 	var err error
-	s, err = discordgo.New("Bot " + *BotToken)
+	s, err = discordgo.New("Bot " + BotToken)
 	if err != nil {
 		log.Fatalf("Invalid bot parameters: %v", err)
 	}
