@@ -16,7 +16,7 @@ import (
 const comicPrefix = "https://xkcd.com/"
 const randomLink = "https://c.xkcd.com/random/comic/"
 
-var ComicsCreated float64 = getMaxComic()
+var latestComic float64 = getMaxComic()
 
 var comicNumberRegex = regexp.MustCompile(`Permanent link to this comic: <a href="https://xkcd.com/(.*?)">`)
 var comicLinkRegex = regexp.MustCompile(`Permanent link to this comic: <a href="(.*?)">`)
@@ -46,21 +46,25 @@ var (
 	commands = []*discordgo.ApplicationCommand{
 		{
 			Name:        "xkcd",
-			Description: "xkcd comics",
+			Description: "Get an xkcd",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionInteger,
 					Name:        "id",
 					Description: "Comic ID",
 					MinValue:    &integerOptionMinValue,
-					MaxValue:    ComicsCreated,
+					MaxValue:    latestComic,
 					Required:    true,
 				},
 			},
 		},
 		{
+			Name:        "xkcd-latest",
+			Description: "Get the latest xkcd",
+		},
+		{
 			Name:        "xkcd-random",
-			Description: "A random comic",
+			Description: "Get a random xkcd",
 		},
 		{
 			Name:        "xkcd-standards",
@@ -73,6 +77,10 @@ var (
 			options := i.ApplicationCommandData().Options
 			id := options[0].IntValue()
 			link := getComic(id)
+			respondWithComic(s, i, link)
+		},
+		"xkcd-latest": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			link := getComic(int64(latestComic))
 			respondWithComic(s, i, link)
 		},
 		"xkcd-random": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
