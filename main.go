@@ -16,8 +16,6 @@ import (
 const comicPrefix = "https://xkcd.com/"
 const randomLink = "https://c.xkcd.com/random/comic/"
 
-var latestComic float64 = getMaxComic()
-
 var comicNumberRegex = regexp.MustCompile(`Permanent link to this comic: <a href="https://xkcd.com/(.*?)">`)
 var comicLinkRegex = regexp.MustCompile(`Permanent link to this comic: <a href="(.*?)">`)
 
@@ -53,7 +51,7 @@ var (
 					Name:        "id",
 					Description: "Comic ID",
 					MinValue:    &integerOptionMinValue,
-					MaxValue:    latestComic,
+					MaxValue:    69000,
 					Required:    true,
 				},
 			},
@@ -76,20 +74,26 @@ var (
 		"xkcd": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			options := i.ApplicationCommandData().Options
 			id := options[0].IntValue()
-			link := getComic(id)
-			respondWithComic(s, i, link)
+
+			if id > getLatestComicID() {
+				respond(s, i, "Woah there! That comic hasn't been written yet. If you read it in an alternate time stream, please contact the appropriate authorities")
+			} else {
+				link := getComic(id)
+				respond(s, i, link)
+			}
 		},
 		"xkcd-latest": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			link := getComic(int64(latestComic))
-			respondWithComic(s, i, link)
+			latest := getLatestComicID()
+			link := getComic(latest)
+			respond(s, i, link)
 		},
 		"xkcd-random": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			link := getRandomComic()
-			respondWithComic(s, i, link)
+			respond(s, i, link)
 		},
 		"xkcd-standards": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			link := getComic(927)
-			respondWithComic(s, i, link)
+			respond(s, i, link)
 		},
 	}
 )
@@ -131,28 +135,28 @@ func main() {
 	log.Println("Gracefully shutting down.")
 }
 
-func respondWithComic(s *discordgo.Session, i *discordgo.InteractionCreate, link string) {
+func respond(s *discordgo.Session, i *discordgo.InteractionCreate, message string) {
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: link,
+			Content: message,
 		},
 	})
 }
 
-func getMaxComic() float64 {
+func getLatestComicID() int64 {
 	content := getHTML("https://xkcd.com/")
 	matches := comicNumberRegex.FindStringSubmatch(content)
 	if len(matches) > 1 {
 		if id, err := strconv.Atoi(matches[1]); err == nil {
 			log.Printf("Latest comic ID: %d", id)
-			return float64(id)
+			return int64(id)
 		}
 	}
 
 	// The latest comic when this bot was created was 2976, so this is a safe and useful default
 	log.Println("Could not get latest comic ID, defaulting to 2976")
-	return 2976.0
+	return 2976
 }
 
 func getComic(number int64) string {
