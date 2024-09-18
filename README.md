@@ -2,6 +2,6 @@
 
 Summon xkcd comics directly to your eyeballs in the form of Discord messages
 
-💬➡️🌐➡️👾➡️👁️👁️
+💬 ➡️ 🌐 ➡️ 👾 ➡️ 👁️👁️
 
-Add it using [this link](https://discord.com/oauth2/authorize?client_id=1276667730409558037&permissions=277025409024&integration_type=0&scope=applications.commands+bot)
+There used to be a link to add the bot, but hosting was accidentally costing me a lot of money, so until that's fixed, have a [cat picture](https://www.argospetinsurance.co.uk/assets/uploads/2017/12/cat-pet-animal-domestic-104827.jpeg) as a peace offering
